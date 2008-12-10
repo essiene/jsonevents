@@ -1,9 +1,22 @@
-JsonEvents is a tcp/ip event notifier.
+JsonEvents is an events broadcaster, 
+that broadcast events as JSON objects.
 
-Basically, an interested party connects to it on
-a listening socket, and any event that is genereted
-on the remote end of the bus is published to
+All connected clients, recieve ALL events,
+there is NO NOTION of channels, or subscriptions,
+and there is not intention to change this decision.
+
+This is not a message queing system... this is NOT
+a poor man's RABBITMQ, if you want a poor man's RABBITMQ,
+get RABBITMQ, its FREE, poor men can afford it ;)
+
+Basically, an event broadcaster pushes events to the bus,
+and interested parties connects to the tcp/ip listening socket.
+From then on, ANY event that is pushed to the bus is recieved by
 all connected clients in JSON representation.
+
+The clients can use a simple gen_events module to handle the
+recieved events. Overtime, such a behaviour may be included
+in this app.
 
 Its hoped to be pretty minimal and easy to setup and reuse,
 and will feature optional ssl/tls support for the
