@@ -1,0 +1,10 @@
+ebin
+*.beam
+diff
+commit
+erl_crash.dump
+*.tar
+*.gz
+*.bz2
+*.rpm
+jsonevents-*/
