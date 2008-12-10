@@ -1,0 +1,10 @@
+JsonEvents is a tcp/ip event notifier.
+
+Basically, an interested party connects to it on
+a listening socket, and any event that is genereted
+on the remote end of the bus is published to
+all connected clients in JSON representation.
+
+Its hoped to be pretty minimal and easy to setup and reuse,
+and will feature optional ssl/tls support for the
+paranoid consumers :)
