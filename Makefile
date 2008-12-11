@@ -9,6 +9,9 @@ all:
 	@cd src;make
 	@echo All Done
 
+run: all
+	@cd src;make run
+
 test: all
 	@cd tests;make
 	@echo Tests Done

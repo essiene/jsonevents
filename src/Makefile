@@ -2,7 +2,7 @@ EBIN_DIR=../ebin
 INCLUDE_DIR=../include
 ERLC=erlc
 ERLC_FLAGS= -W -I $(INCLUDE_DIR) -o $(EBIN_DIR)
-ERL=erl -noshell
+ERL=erl -noshell -pa $(EBIN_DIR) -I $(INCLUDE_DIR)
 
 $(EBIN_DIR)/%.beam: %.erl
 	@mkdir -p $(EBIN_DIR)
@@ -21,6 +21,9 @@ APP=jsonevents
 
 all: ${OBJECTS:%=$(EBIN_DIR)/%.beam} ${APP:%=$(EBIN_DIR)/%.app}
 	@echo All Done
+
+run: all
+	$(ERL) -s jsonevents_tcp_listener
 
 
 clean:

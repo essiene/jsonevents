@@ -25,7 +25,8 @@
 
 -record(listener_state, {
         socket,
-        acceptor
+        acceptor,
+        mfa
         }).
 
 
@@ -57,13 +58,15 @@ stop(Name) ->
 % gen_server callbacks
 
 init([{je_cb_module, Module} | InitArgs]) ->
+    process_flag(trap_exit, true),
+
     case Module:init(InitArgs) of
-        {ok, Port, Options} ->
+        {ok, Port, Options, Mfa} ->
             {ok, ListenSocket} = gen_tcp:listen(Port, Options),
 
             error_logger:info_report(ready_to_listen), 
 
-            {ok, ListenerState} = create_acceptor(ListenSocket),
+            {ok, ListenerState} = create_acceptor(ListenSocket, Mfa),
             {ok, ListenerState};
         Other ->
             {stop, Other}
@@ -82,8 +85,11 @@ handle_cast(_Request, ListenerState) ->
 handle_info({inet_async, LSock, ARef, {ok, ClientSock}}, #listener_state{socket=LSock, acceptor=ARef}=ListenerState) ->
     error_logger:info_report([new_connection_accepted, {csock, ClientSock}]),
     try
-        patch_client_socket(ClientSock, LSock)
-        %handle client here
+        patch_client_socket(ClientSock, LSock),
+        {Module, Function, Args} = ListenerState#listener_state.mfa,
+        NewArgs = [ClientSock | Args],
+        error_logger:info_report([calling_handler, {module, Module}, {function, Function}, {args, NewArgs}]),
+        apply(Module, Function, NewArgs)
     catch
         Type:Exception -> 
             error_logger:error_report({Type, Exception}),
@@ -119,9 +125,9 @@ patch_client_socket(CSock, LSock) when is_port(CSock), is_port(LSock) ->
     ok.
 
 create_acceptor(ListenerState) when is_record(ListenerState, listener_state) ->
-    create_acceptor(ListenerState#listener_state.socket);
+    create_acceptor(ListenerState#listener_state.socket, ListenerState#listener_state.mfa).
 
-create_acceptor(ListenSocket) when is_port(ListenSocket) ->
+create_acceptor(ListenSocket, Mfa) when is_port(ListenSocket) ->
     {ok, Ref} = prim_inet:async_accept(ListenSocket, -1), 
     error_logger:info_report(ready_to_accept_new_client), 
-    {ok, #listener_state{socket=ListenSocket, acceptor=Ref}}.
+    {ok, #listener_state{socket=ListenSocket, acceptor=Ref, mfa=Mfa}}.
