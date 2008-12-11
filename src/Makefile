@@ -13,7 +13,8 @@ $(EBIN_DIR)/%.app: %.app
 	@cp $< $@
 
 
-OBJECTS=
+OBJECTS=je_tcp_listener \
+		jsonevents_tcp_listener
 
 APP=jsonevents
 
