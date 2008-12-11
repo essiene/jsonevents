@@ -3,6 +3,8 @@
 
 -include("jsonevents.hrl").
 
+-export([behaviour_info/1]).
+
 -export([
         start/3,
         start/4,
@@ -25,6 +27,15 @@
         socket,
         acceptor
         }).
+
+
+behaviour_info(callbacks) ->
+    [
+        {init, 1}
+    ];
+
+behaviour_info(_Other) ->
+    undefined.
 
 
 start_link(Name, Module, InitArgs, Options) ->

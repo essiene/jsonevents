@@ -1,12 +1,13 @@
 {application, jsonevents,
- [{description, "Simple events publisher"},
+ [{description, "Simple events broadcaster"},
   {vsn, "0.1"},
   {modules, 
       [
-          jsonevents
+          je_tcp_listener,
+          jsonevents_tcp_listener
       ]
   },
-  {registered, []},
+  {registered, [jsonevents_tcp_listener]},
   {env, []},
   {applications, [kernel, stdlib]}
  ]

@@ -1,5 +1,6 @@
 -module(jsonevents_tcp_listener).
 -include("jsonevents.hrl").
+-behaviour(je_tcp_listener).
 
 -export([
         start_link/1
