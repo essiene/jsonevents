@@ -1,4 +1,4 @@
--module(je_tcp_listener).
+-module(gen_listener_tcp).
 -behaviour(gen_server).
 
 -include("jsonevents.hrl").

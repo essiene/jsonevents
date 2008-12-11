@@ -13,8 +13,10 @@ $(EBIN_DIR)/%.app: %.app
 	@cp $< $@
 
 
-OBJECTS=je_tcp_listener \
-		jsonevents_tcp_listener
+OBJECTS=gen_listener_tcp \
+		jsonevents_server_tcp \
+		jsonevents_socket_client_sup  \
+		jsonevents_socket_client_fsm
 
 APP=jsonevents
 
@@ -23,7 +25,7 @@ all: ${OBJECTS:%=$(EBIN_DIR)/%.beam} ${APP:%=$(EBIN_DIR)/%.app}
 	@echo All Done
 
 run: all
-	$(ERL) -s jsonevents_tcp_listener
+	$(ERL) -s jsonevents_server_tcp
 
 
 clean:
