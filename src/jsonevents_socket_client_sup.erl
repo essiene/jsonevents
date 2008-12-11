@@ -13,7 +13,9 @@
     ]).
 
 start_link() ->
-    supervisor:start_link({local, ?SOCKET_CLIENT_SUP}, ?MODULE, []).
+    Res = supervisor:start_link({local, ?SOCKET_CLIENT_SUP}, ?MODULE, []),
+    error_logger:info_report({?MODULE, started}),
+    Res.
 
 start_child(ClientSocket) -> 
     supervisor:start_child(?SOCKET_CLIENT_SUP, [ClientSocket]).

@@ -31,24 +31,26 @@ start_link(ClientSocket) ->
 
 
 hello(_Event, StateData) ->
-    {nextstate, hello, StateData}.
+    {next_state, hello, StateData}.
 
 hello(Event, _From, StateData) ->
     {reply, {illegal, Event}, hello, StateData}.
 
 
 init([ClientSocket]) ->
+    ok = inet:setopts(ClientSocket, [{active, once}]),
     {ok, hello, ClientSocket}.
 
 handle_event(_Event, State, StateData) ->
-    {nextstate, State, StateData}.
+    {next_state, State, StateData}.
 
 handle_sync_event(Event, _From, State, StateData) ->
     {reply, {illegal, Event}, State, StateData}.
 
 handle_info({tcp, ClientSocket, Binary}, State, ClientSocket=StateData) ->
     ok = gen_tcp:send(ClientSocket, Binary),
-    {nextstate, State, StateData};
+    ok = inet:setopts(ClientSocket, [{active, once}]),
+    {next_state, State, StateData};
 
 handle_info({tcp_error, ClientSocket, Reason}, _State, ClientSocket=StateData) ->
     {stop, Reason, StateData};
@@ -57,12 +59,12 @@ handle_info({tcp_closed, ClientSocket}, _State, ClientSocket=StateData) ->
     {stop, normal, StateData};
 
 handle_info(_Info, State, StateData) ->
-    {nextstate, State, StateData}.
+    {next_state, State, StateData}.
 
 terminate(_Reason, _State, ClientSocket=_StateData) ->
     gen_tcp:close(ClientSocket),
     ok.
 
 code_change(_OldVsn, State, StateData, _Extra) ->
-    {nextstate, State, StateData}.
+    {next_state, State, StateData}.
 

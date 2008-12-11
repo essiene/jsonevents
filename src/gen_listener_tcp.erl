@@ -61,10 +61,10 @@ init([{je_cb_module, Module} | InitArgs]) ->
     process_flag(trap_exit, true),
 
     case Module:init(InitArgs) of
-        {ok, Port, Options, Mfa} ->
+        {ok, {Port, Options, Mfa}} ->
             {ok, ListenSocket} = gen_tcp:listen(Port, Options),
 
-            error_logger:info_report(ready_to_listen), 
+            error_logger:info_report([listening_started, {port, Port}, {lsock, ListenSocket} | Options]), 
 
             {ok, ListenerState} = create_acceptor(ListenSocket, Mfa),
             {ok, ListenerState};
@@ -83,13 +83,17 @@ handle_cast(_Request, ListenerState) ->
     {noreply, ListenerState}.
 
 handle_info({inet_async, LSock, ARef, {ok, ClientSock}}, #listener_state{socket=LSock, acceptor=ARef}=ListenerState) ->
-    error_logger:info_report([new_connection_accepted, {csock, ClientSock}]),
+    error_logger:info_report([new_connection, {csock, ClientSock}, {lsock, LSock}, {async_ref, ARef}]),
     try
         patch_client_socket(ClientSock, LSock),
         {Module, Function, Args} = ListenerState#listener_state.mfa,
         NewArgs = [ClientSock | Args],
+
         error_logger:info_report([calling_handler, {module, Module}, {function, Function}, {args, NewArgs}]),
-        apply(Module, Function, NewArgs)
+        {ok, Pid} = apply(Module, Function, NewArgs),
+
+        error_logger:info_report([changing_controlling_socket, {oldpid, self()}, {newpid, Pid}]),
+        ok = gen_tcp:controlling_process(ClientSock, Pid)
     catch
         Type:Exception -> 
             error_logger:error_report({Type, Exception}),
@@ -101,13 +105,14 @@ handle_info({inet_async, LSock, ARef, {ok, ClientSock}}, #listener_state{socket=
     {noreply, NewListenerState};
 
 handle_info({inet_async, LSock, ARef, Error}, #listener_state{socket=LSock, acceptor=ARef}=ListenerState) ->
-    error_logger:error_report(Error),
+    error_logger:error_report([acceptor_error, {reason, Error}, {lsock, LSock}, {async_ref, ARef}]),
     {stop, Error, ListenerState};
 
 handle_info(_Info, ListenerState) ->
     {noreply, ListenerState}.
 
-terminate(_Reason, ListenerState) ->
+terminate(Reason, ListenerState) ->
+    error_logger:info_report([listener_terminating, {reason, Reason}]),
     gen_tcp:close(ListenerState#listener_state.socket),
     ok.
 
@@ -129,5 +134,6 @@ create_acceptor(ListenerState) when is_record(ListenerState, listener_state) ->
 
 create_acceptor(ListenSocket, Mfa) when is_port(ListenSocket) ->
     {ok, Ref} = prim_inet:async_accept(ListenSocket, -1), 
-    error_logger:info_report(ready_to_accept_new_client), 
+
+    error_logger:info_report(waiting_for_connection), 
     {ok, #listener_state{socket=ListenSocket, acceptor=Ref, mfa=Mfa}}.

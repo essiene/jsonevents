@@ -12,26 +12,26 @@
     ]).
 
 start() ->
-    gen_listener_tcp:start({local, ?LISTENER}, ?MODULE, [8595], []).
+    gen_listener_tcp:start({local, ?LISTENER}, ?MODULE, [erlcfg:new()], []).
 
-start_link(Port) when is_number(Port) ->
-    gen_listener_tcp:start_link({local, ?LISTENER}, ?MODULE, [Port], []).
+start_link(Config) ->
+    gen_listener_tcp:start_link({local, ?LISTENER}, ?MODULE, [Config], []).
 
-init([Port]) ->
+init([Config]) ->
     {ok, 
         {
-            Port, 
+            Config:get(server.port, 8195), 
             [ 
                 binary, 
                 inet, 
                 {active, false}, 
-                {backlog, 10}, 
+                {backlog, Config:get(server.backlog, 10)},
                 {reuseaddr, true} 
             ], 
             
             { 
                 jsonevents_socket_client_sup, 
-                new_connection, 
+                start_child, 
                 []
             } 
         }
