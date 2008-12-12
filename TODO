@@ -1,0 +1,17 @@
+- ssl/tls support
+    - this means more generalization of the gen_listener_tcp behaviour
+    to support pre_listen, post_listen, pre_accept and post_accept hooks,
+    this will allow us more gracefully interfere with the connections.
+
+    - Note that we need to carry StateData as we support the various
+    callback hooks, which means, we need to update the init/1 return
+    type definition.
+
+- erlang client
+    - We need a native erlang client, which will connect via tcp/ip
+    and use a gen_event to allow easy reaction to published events.
+
+- unittests
+    - we don't have any right now. we should be able to isolate
+    and unittest the core parts of this application, even though
+    most of it is simple
