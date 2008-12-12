@@ -30,6 +30,12 @@ start_link(ClientSocket) ->
     gen_fsm:start_link(?MODULE, [ClientSocket], []).
 
 
+hello({?EVENT_BUS, {broadcast, Data}}, ClientSocket=StateData) ->
+    error_logger:info_report([relaying_broadcast, {data, Data}, {csock, ClientSocket}, {pid, self()}]),
+    ok = gen_tcp:send(ClientSocket, Data),
+
+    {next_state, hello, StateData};
+
 hello(_Event, StateData) ->
     {next_state, hello, StateData}.
 
@@ -39,6 +45,10 @@ hello(Event, _From, StateData) ->
 
 init([ClientSocket]) ->
     ok = inet:setopts(ClientSocket, [{active, once}]),
+
+    error_logger:info_report([connecting_to_event_bus, {csock, ClientSocket}, {pid, self()}]),
+    jsonevents_bus:connect(),
+
     {ok, hello, ClientSocket}.
 
 handle_event(_Event, State, StateData) ->
@@ -62,6 +72,10 @@ handle_info(_Info, State, StateData) ->
     {next_state, State, StateData}.
 
 terminate(_Reason, _State, ClientSocket=_StateData) ->
+    error_logger:info_report([disconnecting_from_event_bus, {csock, ClientSocket}, {pid, self()}]),
+    jsonevents_bus:disconnect(),
+
+    error_logger:info_report([connection_closing, {csock, ClientSocket}, {pid, self()}]),
     gen_tcp:close(ClientSocket),
     ok.
 

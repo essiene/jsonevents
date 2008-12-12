@@ -30,6 +30,7 @@ stop() ->
 
 
 init([ConfigFile]) ->
+    timer:send_interval(10000, {?MODULE, push}),
     jsonevents:start_server(ConfigFile).
 
 
@@ -43,6 +44,18 @@ handle_cast(stop, Pid=StateData) ->
 
 handle_cast(_Request, StateData) ->
     {noreply, StateData}.
+
+handle_info({?MODULE, push}, StateData) ->
+    {{YYYY, MM, DD}, {HH, Mm, Ss}} = erlang:localtime(),
+    jsonevents:broadcast(current_time, [ 
+            {year, YYYY},
+            {month, MM},
+            {day, DD},
+            {hour, HH},
+            {minute, Mm},
+            {second, Ss}
+        ]),
+    {noreply, StateData};
 
 handle_info(_Request, StateData) ->
     {noreply, StateData}.

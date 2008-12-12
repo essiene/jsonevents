@@ -30,6 +30,11 @@ init([ConfigFile]) ->
             Cfg
     end,
 
+    EventBus = {?EVENT_BUS,
+        {jsonevents_bus, start_link, []},
+        permanent, 5000, worker, [jsonevents_bus]
+    },
+
     ClientSup = {?SOCKET_CLIENT_SUP, 
         {jsonevents_socket_client_sup, start_link, []}, 
         permanent, 5000, supervisor, [jsonevents_socket_client_sup]
@@ -44,6 +49,6 @@ init([ConfigFile]) ->
         ok, 
         {
             {one_for_one, 3, 10}, 
-            [ClientSup, Listener]
+            [EventBus, ClientSup, Listener]
         }
     }.
