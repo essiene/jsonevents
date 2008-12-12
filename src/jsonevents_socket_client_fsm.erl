@@ -8,8 +8,8 @@
     ]).
 
 -export([
-        hello/2,
-        hello/3
+        active/2,
+        active/3
     ]).
 
 
@@ -30,17 +30,17 @@ start_link(ClientSocket) ->
     gen_fsm:start_link(?MODULE, [ClientSocket], []).
 
 
-hello({?EVENT_BUS, {broadcast, Data}}, ClientSocket=StateData) ->
+active({?EVENT_BUS, {broadcast, Data}}, ClientSocket=StateData) ->
     error_logger:info_report([relaying_broadcast, {data, Data}, {csock, ClientSocket}, {pid, self()}]),
     ok = gen_tcp:send(ClientSocket, Data),
 
-    {next_state, hello, StateData};
+    {next_state, active, StateData};
 
-hello(_Event, StateData) ->
-    {next_state, hello, StateData}.
+active(_Event, StateData) ->
+    {next_state, active, StateData}.
 
-hello(Event, _From, StateData) ->
-    {reply, {illegal, Event}, hello, StateData}.
+active(Event, _From, StateData) ->
+    {reply, {illegal, Event}, active, StateData}.
 
 
 init([ClientSocket]) ->
@@ -49,7 +49,7 @@ init([ClientSocket]) ->
     error_logger:info_report([connecting_to_event_bus, {csock, ClientSocket}, {pid, self()}]),
     jsonevents_bus:connect(),
 
-    {ok, hello, ClientSocket}.
+    {ok, active, ClientSocket}.
 
 handle_event(_Event, State, StateData) ->
     {next_state, State, StateData}.
@@ -57,8 +57,7 @@ handle_event(_Event, State, StateData) ->
 handle_sync_event(Event, _From, State, StateData) ->
     {reply, {illegal, Event}, State, StateData}.
 
-handle_info({tcp, ClientSocket, Binary}, State, ClientSocket=StateData) ->
-    ok = gen_tcp:send(ClientSocket, Binary),
+handle_info({tcp, ClientSocket, _Binary}, State, ClientSocket=StateData) ->
     ok = inet:setopts(ClientSocket, [{active, once}]),
     {next_state, State, StateData};
 
@@ -81,4 +80,3 @@ terminate(_Reason, _State, ClientSocket=_StateData) ->
 
 code_change(_OldVsn, State, StateData, _Extra) ->
     {next_state, State, StateData}.
-
