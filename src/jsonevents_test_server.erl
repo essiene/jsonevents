@@ -31,7 +31,7 @@ stop() ->
 
 init([ConfigFile]) ->
     timer:send_interval(10000, {?MODULE, push}),
-    jsonevents:start_server(ConfigFile).
+    jsonevents:start(ConfigFile).
 
 
 handle_call(Request, _From, StateData) ->
@@ -39,7 +39,7 @@ handle_call(Request, _From, StateData) ->
 
 
 handle_cast(stop, Pid=StateData) ->
-    jsonevents:stop_server(Pid),
+    jsonevents:stop(Pid),
     {stop, normal, StateData};
 
 handle_cast(_Request, StateData) ->

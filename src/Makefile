@@ -18,7 +18,6 @@ OBJECTS=gen_listener_tcp \
 		jsonevents_socket_client_sup  \
 		jsonevents_socket_client_fsm \
 		jsonevents_bus \
-		jsonevents_sup \
 		jsonevents \
 		jsonevents_test_server
 
