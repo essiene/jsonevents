@@ -5,8 +5,9 @@
       [
           gen_listener_tcp,
           jsonevents_server_tcp,
-          jsonevents_socket_client_sup,
-          jsonevents_socket_client_fsm,
+          jsonevents_server_ssl,
+          jsonevents_session_sup,
+          jsonevents_session,
           jsonevents_bus,
           jsonevents,
           jsonevents_test_server
@@ -15,7 +16,8 @@
   {registered, 
       [
           jsonevents_server_tcp,
-          jsonevents_socket_client_sup,
+          jsonevents_server_ssl,
+          jsonevents_session_sup,
           jsonevents_bus,
           jsonevents_sup
       ]
