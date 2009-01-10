@@ -12,15 +12,15 @@
     ]).
 
 start() ->
-    gen_listener_tcp:start({local, ?LISTENER}, ?MODULE, [erlcfg:new()], []).
+    gen_listener_tcp:start({local, ?TCP_LISTENER}, ?MODULE, [erlcfg:new()], []).
 
 start_link(Config) ->
-    gen_listener_tcp:start_link({local, ?LISTENER}, ?MODULE, [Config], []).
+    gen_listener_tcp:start_link({local, ?TCP_LISTENER}, ?MODULE, [Config], []).
 
 init([Config]) ->
     {ok, 
         {
-            Config:get(server.port, 8195), 
+            Config:get(server.port.tcp, 8195), 
             [ 
                 binary, 
                 inet, 
@@ -30,7 +30,7 @@ init([Config]) ->
             ], 
             
             { 
-                jsonevents_socket_client_sup, 
+                jsonevents_session_sup, 
                 start_child, 
                 []
             } 
