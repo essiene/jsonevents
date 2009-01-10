@@ -41,27 +41,34 @@ broadcast(Name, Body) ->
     jsonevents_bus:broadcast(Name, Body).
 
 init([Config]) ->
+    application:start(crypto),
+    application:start(ssl),
 
     EventBus = {?EVENT_BUS,
         {jsonevents_bus, start_link, []},
         permanent, 5000, worker, [jsonevents_bus]
     },
 
-    ClientSup = {?SOCKET_CLIENT_SUP, 
-        {jsonevents_socket_client_sup, start_link, []}, 
-        permanent, 5000, supervisor, [jsonevents_socket_client_sup]
+    ClientSup = {?SESSION_SUP, 
+        {jsonevents_session_sup, start_link, []}, 
+        permanent, 5000, supervisor, [jsonevents_session_sup]
     },
 
-    Listener = {?LISTENER, 
+    TcpListener = {?TCP_LISTENER, 
         {jsonevents_server_tcp, start_link, [Config]}, 
         permanent, 5000, worker, [jsonevents_server_tcp] 
+    },
+
+    SslListener = {?SSL_LISTENER, 
+        {jsonevents_server_ssl, start_link, [Config]}, 
+        permanent, 5000, worker, [jsonevents_server_ssl] 
     },
 
     {
         ok, 
         {
             {one_for_one, 3, 10}, 
-            [EventBus, ClientSup, Listener]
+            [EventBus, ClientSup, TcpListener, SslListener]
         }
     }.
 
