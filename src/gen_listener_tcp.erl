@@ -90,10 +90,7 @@ handle_info({inet_async, LSock, ARef, {ok, ClientSock}}, #listener_state{socket=
         NewArgs = [ClientSock | Args],
 
         error_logger:info_report([calling_handler, {module, Module}, {function, Function}, {args, NewArgs}]),
-        {ok, Pid} = apply(Module, Function, NewArgs),
-
-        error_logger:info_report([changing_controlling_socket, {oldpid, self()}, {newpid, Pid}]),
-        ok = gen_tcp:controlling_process(ClientSock, Pid)
+        {ok, _Pid} = apply(Module, Function, NewArgs)
     catch
         Type:Exception -> 
             error_logger:error_report({Type, Exception}),
