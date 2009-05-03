@@ -1,9 +1,9 @@
 JsonEvents is an events broadcaster, 
-that broadcast events as JSON objects.
+that broadcasts events as JSON objects.
 
 All connected clients, recieve ALL events,
 there is NO NOTION of channels, or subscriptions,
-and there is not intention to change this decision.
+and there is no intention to change this decision.
 
 This is not a message queing system... this is NOT
 a poor man's RABBITMQ, if you want a poor man's RABBITMQ,
