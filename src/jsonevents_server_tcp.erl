@@ -24,18 +24,21 @@ start_link(Config) ->
     gen_listener_tcp:start_link({local, ?TCP_LISTENER}, ?MODULE, [Config], []).
 
 init([Config]) ->
-    {
-        ok, 
-        {Config:get(server.port.tcp, 8195), 
-            [ 
-                binary, 
-                inet, 
-                {active, false}, 
-                {backlog, Config:get(server.backlog, 10)},
-                {reuseaddr, true} 
-            ]},
-        nil
-    }.
+    case Config:get(server.port.tcp) of
+        {error, {not_found, server.port.tcp}} ->
+            error_logger:warning_report("TCP port unspecified. The TCP listener will not start"),
+            ignore;
+        Port ->
+            {
+                ok, 
+                {Port, [binary, inet, 
+                        {active, false}, 
+                        {backlog, Config:get(server.backlog, 10)},
+                        {reuseaddr, true}]
+                },
+                nil
+            }
+    end.
 
 handle_accept(Sock, State) -> 
     jsonevents_session_sup:start_child(Sock),

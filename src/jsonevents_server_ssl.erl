@@ -30,20 +30,21 @@ start_link(Config) ->
     gen_listener_tcp:start_link({local, ?SSL_LISTENER}, ?MODULE, [Config], []).
 
 init([Config]) ->
-    {ok, 
-        {
-            Config:get(server.port.ssl, 8196), 
-            [ 
-                binary, 
-                inet, 
-                {active, false}, 
-                {backlog, Config:get(server.backlog, 10)},
-                {reuseaddr, true} 
-            ]}, 
-        #server_state{cacertfile = Config:get(server.ssl.cacerts, "/etc/jsonevents/cacerts.pem"), 
-                      certfile = Config:get(server.ssl.cert, "/etc/jsonevents/cert.pem"), 
-                      keyfile = Config:get(server.ssl.key, "/etc/jsonevents/key.pem")}
-      }.
+    case Config:get(server.port.ssl) of
+        {error, {not_found, server.port.ssl}} ->
+            error_logger:warning_report("SSL port unspecified. The SSL listener will not start"),
+            ignore;
+        Port ->
+            {ok, 
+                {Port, [binary, inet, 
+                        {active, false}, 
+                        {backlog, Config:get(server.backlog, 10)},
+                        {reuseaddr, true}]}, 
+                #server_state{cacertfile = Config:get(server.ssl.cacerts, "/etc/jsonevents/cacerts.pem"), 
+                              certfile = Config:get(server.ssl.cert, "/etc/jsonevents/cert.pem"), 
+                              keyfile = Config:get(server.ssl.key, "/etc/jsonevents/key.pem")}
+            } 
+    end.
 
 handle_accept(Sock, St) ->
     error_logger:info_msg("Upgrading connection ~p to SSL~n", [Sock]),
