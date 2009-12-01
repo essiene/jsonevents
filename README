@@ -19,5 +19,5 @@ recieved events. Overtime, such a behaviour may be included
 in this app.
 
 Its hoped to be pretty minimal and easy to setup and reuse,
-and will feature optional ssl/tls support for the
+and features optional ssl/tls support for the
 paranoid consumers :)
