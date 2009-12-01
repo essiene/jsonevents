@@ -18,14 +18,14 @@
 
 
 start(ConfigFile) when is_list(ConfigFile) ->
-    Config = get_config_or_die(ConfigFile),
+    {ok, Config} = erlcfg:new(ConfigFile, true),
     start(Config);
 
 start(Config) ->
     supervisor:start_link(?MODULE, [Config]).
 
 start_link(ConfigFile) when is_list(ConfigFile) ->
-    Config = get_config_or_die(ConfigFile),
+    {ok, Config} = erlcfg:new(ConfigFile, true),
     start_link(Config);
 
 start_link(Config) ->
@@ -71,13 +71,3 @@ init([Config]) ->
             [EventBus, ClientSup, TcpListener, SslListener]
         }
     }.
-
-
-get_config_or_die(ConfigFile) ->
-    case erlcfg:new(ConfigFile) of
-        {error, Reason} ->
-            throw(Reason);
-        Cfg ->
-            Cfg
-    end.
-
