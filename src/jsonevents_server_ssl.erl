@@ -50,7 +50,8 @@ handle_accept(Sock, St) ->
     error_logger:info_msg("Upgrading connection ~p to SSL~n", [Sock]),
     SslOpts = [{cacertfile, St#server_state.cacertfile},
         {certfile, St#server_state.certfile},
-        {keyfile, St#server_state.keyfile}
+        {keyfile, St#server_state.keyfile},
+        {verify, verify_none}
     ],
 
     case ssl:ssl_accept(Sock, SslOpts) of
