@@ -1,0 +1,15 @@
+server = {
+
+    port = {
+        int tcp = 8195;
+        int ssl = 8196;
+    }
+
+    ssl = {
+        string cacerts;
+        string cert;
+        string key;
+    }
+
+    int backlog = 10;
+}
